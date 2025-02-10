@@ -1,4 +1,90 @@
-Flask
-numpy
-opencv-python
-gunicorn
+from flask import Flask, request, jsonify
+import cv2
+import numpy as np
+
+app = Flask(__name__)
+
+def analyze_undertone(image_path):
+    image = cv2.imread(image_path)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert to RGB
+
+    # Define region of interest (center part of the image)
+    height, width, _ = image.shape
+    x1, y1, x2, y2 = width // 3, height // 3, 2 * width // 3, 2 * height // 3
+    skin_region = image[y1:y2, x1:x2]
+
+    # Calculate the average color
+    avg_color = np.mean(skin_region, axis=(0, 1))
+    r, g, b = avg_color
+
+    # Determine undertone
+    if r > b and g >= b:
+        undertone = "Warm Undertone 🔥"
+    elif b > r:
+        undertone = "Cool Undertone ❄️"
+    else:
+        undertone = "Neutral Undertone ⚖️"
+
+    return undertone
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+
+    file = request.files['file']
+    file_path = "temp.jpg"
+    file.save(file_path)
+
+    # Analyze the image
+    undertone = analyze_undertone(file_path)
+
+    return jsonify({"undertone": undertone})
+
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=5000)
+from flask import Flask, request, jsonify
+import cv2
+import numpy as np
+
+app = Flask(__name__)
+
+def analyze_undertone(image_path):
+    image = cv2.imread(image_path)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # Convert to RGB
+
+    # Define region of interest (center part of the image)
+    height, width, _ = image.shape
+    x1, y1, x2, y2 = width // 3, height // 3, 2 * width // 3, 2 * height // 3
+    skin_region = image[y1:y2, x1:x2]
+
+    # Calculate the average color
+    avg_color = np.mean(skin_region, axis=(0, 1))
+    r, g, b = avg_color
+
+    # Determine undertone
+    if r > b and g >= b:
+        undertone = "Warm Undertone 🔥"
+    elif b > r:
+        undertone = "Cool Undertone ❄️"
+    else:
+        undertone = "Neutral Undertone ⚖️"
+
+    return undertone
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+
+    file = request.files['file']
+    file_path = "temp.jpg"
+    file.save(file_path)
+
+    # Analyze the image
+    undertone = analyze_undertone(file_path)
+
+    return jsonify({"undertone": undertone})
+
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=5000)
